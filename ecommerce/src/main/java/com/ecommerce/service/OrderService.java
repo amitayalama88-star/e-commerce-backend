@@ -1,6 +1,7 @@
 package com.ecommerce.service;
 
 import com.ecommerce.dto.CheckoutResponse;
+import com.ecommerce.dto.OrderHistoryResponse;
 import com.ecommerce.model.*;
 import com.ecommerce.repository.CartItemRepository;
 import com.ecommerce.repository.ItemRepository;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
@@ -86,5 +88,25 @@ public class OrderService {
                 .tax(tax)
                 .total(total)
                 .build();
+    }
+
+    public List<OrderHistoryResponse> getOrderHistory(String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
+        List<Order> orders = orderRepository.findByUser(user);
+
+        return orders.stream().map(order -> 
+            OrderHistoryResponse.builder()
+                .orderId(order.getId())
+                .orderDate(order.getOrderDate())
+                .totalAmount(order.getTotalAmount())
+                .items(order.getItems().stream().map(orderItem -> 
+                    OrderHistoryResponse.OrderHistoryItemDetails.builder()
+                        .itemName(orderItem.getItem().getName())
+                        .quantity(orderItem.getQuantity())
+                        .unitPrice(orderItem.getPrice())
+                        .build()
+                ).collect(Collectors.toList()))
+                .build()
+        ).collect(Collectors.toList());
     }
 }

@@ -1,8 +1,11 @@
 package com.ecommerce.controller;
 
 import com.ecommerce.dto.CheckoutResponse;
+import com.ecommerce.dto.OrderHistoryResponse;
 import com.ecommerce.service.OrderService;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -20,5 +23,10 @@ public class OrderController {
         } catch (RuntimeException e) {
             return "Oops! " + e.getMessage();
         }
+    }
+
+    @GetMapping("/history")
+    public List<OrderHistoryResponse> getOrderHistory(@RequestParam String username) {
+        return orderService.getOrderHistory(username);
     }
 }
